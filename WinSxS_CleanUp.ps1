@@ -14,7 +14,7 @@ function Get-FolderSize {
 }
 
 # Function to cleanup WinSxS folder
-function Clean-WinSxS {
+function Remove-WinSxS {
     Write-Host "Starting WinSxS cleanup..."
     
     $WinSxSPath = "C:\Windows\WinSxS"  # Change this path as needed
@@ -48,4 +48,4 @@ function Clean-WinSxS {
 }
 
 # Run the cleanup function
-Clean-WinSxS
+Remove-WinSxS
