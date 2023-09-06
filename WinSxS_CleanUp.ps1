@@ -24,7 +24,8 @@ function Remove-WinSxS {
 
     # Run DISM cleanup (you can add more cleanup commands here)
     Write-Host "Running DISM cleanup..."
-    DISM.exe /online /Cleanup-Image /StartComponentCleanup
+    DISM.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase /SPSuperseded
+
 
     $WinSxSSizeAfter = (Get-FolderSize -Path $WinSxSPath) / 1GB
 
