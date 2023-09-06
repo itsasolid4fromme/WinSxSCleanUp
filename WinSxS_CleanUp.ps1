@@ -1,25 +1,51 @@
-# Define a function to perform the WinSxS cleanup
-function Clean-WinSxS {
-    # Check if the script is running with elevated privileges (as Administrator)
-    if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Write-Host "Please run this script as an administrator."
-        Exit
+# Function to calculate folder size recursively
+function Get-FolderSize {
+    param (
+        [string]$Path
+    )
+    $folder = Get-Item $Path
+    $size = $folder.Length
+
+    Get-ChildItem $Path -Recurse | ForEach-Object {
+        $size += $_.Length
     }
 
-    # Perform a cleanup of the WinSxS folder using DISM
-    Write-Host "Starting WinSxS cleanup..."
-
-    # Capture the output of the DISM command
-    $output = Invoke-Expression -Command "Dism.exe /Online /Cleanup-Image /StartComponentCleanup"
-
-    # Check if the cleanup was successful
-    if ($output -match "Operation completed successfully.") {
-        Write-Host "WinSxS cleanup completed successfully."
-    } else {
-        Write-Host "WinSxS cleanup encountered an error. Please check the output for details."
-        Write-Host $output
-    }
+    return $size
 }
 
-# Run the WinSxS cleanup function
+# Function to cleanup WinSxS folder
+function Clean-WinSxS {
+    Write-Host "Starting WinSxS cleanup..."
+    
+    $WinSxSPath = "C:\Windows\WinSxS"  # Change this path as needed
+    $WinSxSSizeBefore = (Get-FolderSize -Path $WinSxSPath) / 1GB
+
+    Write-Host "WinSxS folder size before cleanup: $WinSxSSizeBefore GB"
+
+    # Run DISM cleanup (you can add more cleanup commands here)
+    Write-Host "Running DISM cleanup..."
+    DISM.exe /online /Cleanup-Image /StartComponentCleanup
+
+    $WinSxSSizeAfter = (Get-FolderSize -Path $WinSxSPath) / 1GB
+
+    Write-Host "WinSxS folder size after cleanup: $WinSxSSizeAfter GB"
+    $CleanupSize = $WinSxSSizeBefore - $WinSxSSizeAfter
+
+    Write-Host "Total space saved: $CleanupSize GB"
+    Write-Host "WinSxS cleanup completed."
+
+    # Cleanup progress bar
+    $Progress = 100
+    Write-Progress -PercentComplete $Progress -Status "Cleanup completed" -Completed
+
+    # Additional cleanup tasks can be added here
+
+    # Display verbose information
+    Write-Host "Verbose information:"
+    Write-Host "  - This script runs DISM to clean up the WinSxS folder."
+    Write-Host "  - The WinSxS folder size before and after cleanup is displayed."
+    Write-Host "  - Total space saved is calculated."
+}
+
+# Run the cleanup function
 Clean-WinSxS
